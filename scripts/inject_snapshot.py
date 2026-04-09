@@ -6,6 +6,7 @@
 
 import re
 import os
+import json
 
 CONTENT_DIR = os.path.join(os.path.dirname(__file__), "..", "content", "Business")
 
@@ -40,9 +41,13 @@ def yaml_val(text, key):
     return "—"
 
 def extract_params_block(content):
-    """提取 YAML 代码块 或 结构化参数表格区域"""
+    """提取 YAML/JSON 代码块 或 结构化参数表格区域"""
     # 优先 YAML 代码块
     m = re.search(r'```yaml\s*\r?\n(.*?)```', content, re.DOTALL)
+    if m:
+        return m.group(1)
+    # JSON 代码块
+    m = re.search(r'```json\s*\r?\n(.*?)```', content, re.DOTALL)
     if m:
         return m.group(1)
     # 表格格式：取"结构化参数"或末尾大段表格
@@ -52,9 +57,63 @@ def extract_params_block(content):
     # 最后兜底：取全文（表格散布在各处）
     return content
 
-def parse_file(content):
-    block = extract_params_block(content)
+def json_val(obj, key):
+    """递归在嵌套 JSON 对象中查找 key"""
+    if isinstance(obj, dict):
+        if key in obj:
+            v = obj[key]
+            return str(v) if v is not None else "—"
+        for v in obj.values():
+            result = json_val(v, key)
+            if result != "—":
+                return result
+    elif isinstance(obj, list):
+        for item in obj:
+            result = json_val(item, key)
+            if result != "—":
+                return result
+    return "—"
 
+def parse_file(content):
+    # 优先尝试 JSON 块
+    m = re.search(r'```json\s*\r?\n(.*?)```', content, re.DOTALL)
+    if m:
+        try:
+            obj = json.loads(m.group(1))
+            raw_roe = json_val(obj, "roe_5y_avg")
+            data = {}
+            if raw_roe != "—":
+                try:
+                    data["roe"] = str(float(raw_roe)).rstrip("0").rstrip(".") + "%"
+                except ValueError:
+                    data["roe"] = raw_roe if "%" in raw_roe else raw_roe + "%"
+            else:
+                data["roe"] = "—"
+            data["moat"]           = json_val(obj, "moat_rating")
+            data["sustainability"] = json_val(obj, "moat_sustainability")
+            data["mgmt"]           = json_val(obj, "management_rating")
+            data["cycle"]          = json_val(obj, "cyclicality")
+            data["cycle_sub"]      = json_val(obj, "cycle_position")
+            data["capital"]        = json_val(obj, "capital_intensity")
+            data["capital_sub"]    = ""
+            data["barrier"]        = json_val(obj, "entry_barrier")
+            data["advantage"]      = json_val(obj, "moat_existence")
+            data["advantage_sub"]  = json_val(obj, "moat_evidence_strength")
+            if all(v == "—" for v in data.values()):
+                return None
+            # 清理
+            for k in data:
+                if isinstance(data[k], str):
+                    data[k] = re.split(r'[（(【]', data[k])[0].strip().strip("*").strip()
+            cap_map = {"capital-hungry": "重资产", "capital-light": "轻资产", "moderate": "中等", "asset-light": "轻资产"}
+            data["capital"] = cap_map.get(data["capital"], data["capital"])
+            if len(data.get("cycle_sub", "")) > 20:
+                data["cycle_sub"] = data["cycle_sub"][:20] + "…"
+            return data
+        except (json.JSONDecodeError, Exception):
+            pass
+
+    block = extract_params_block(content)
     data = {}
 
     # ROE

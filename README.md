@@ -15,3 +15,11 @@ Quartz is a set of tools that helps you publish your [digital garden](https://jz
     <img src="https://cdn.jsdelivr.net/gh/jackyzha0/jackyzha0/sponsorkit/sponsors.svg" />
   </a>
 </p>
+
+## upload
+cd E:/code/quartz
+git add -A
+git commit -m ""
+git push
+
+

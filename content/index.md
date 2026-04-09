@@ -10,8 +10,3 @@ title: Welcome to CRW
 - [[招商银行-商业分析|招商银行 - 商业分析]]
 - [[招商银行-投资分析|招商银行 - 投资分析]]
 - [[招商银行-估值分析|招商银行 - 估值分析]]
-
-
-
-This is a blank Quartz installation.
-See the [documentation](https://quartz.jzhao.xyz) for how to get started.

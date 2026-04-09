@@ -101,14 +101,11 @@ def parse_file(content):
     return data
 
 def build_card(label, value, color, sub=""):
-    sub_html = f'\n      <div class="card-sub">{sub}</div>' if sub and sub != "—" else ""
-    return (f'    <div class="card {color}">\n'
-            f'      <div class="card-label">{label}</div>\n'
-            f'      <div class="card-value">{value}</div>{sub_html}\n'
-            f'    </div>')
+    sub_html = f'<div class="card-sub">{sub}</div>' if sub and sub != "—" else ""
+    return f'<div class="card {color}"><div class="card-label">{label}</div><div class="card-value">{value}</div>{sub_html}</div>'
 
 def build_snapshot(data):
-    cards = "\n".join([
+    cards = "".join([
         build_card("5Y AVG ROE",  data["roe"],            COLOR_MAP["roe"]),
         build_card("护城河评级",   data["moat"],           COLOR_MAP["moat"]),
         build_card("可持续性",     data["sustainability"], COLOR_MAP["sustainability"]),
@@ -118,12 +115,7 @@ def build_snapshot(data):
         build_card("进入壁垒",     data["barrier"],        COLOR_MAP["barrier"]),
         build_card("优势存在性",   data["advantage"],      COLOR_MAP["advantage"], data.get("advantage_sub", "")),
     ])
-    return (f'<div class="quality-snapshot">\n'
-            f'  <div class="snapshot-title">QUALITY SNAPSHOT</div>\n'
-            f'  <div class="snapshot-grid">\n'
-            f'{cards}\n'
-            f'  </div>\n'
-            f'</div>\n\n')
+    return f'<div class="quality-snapshot"><div class="snapshot-title">QUALITY SNAPSHOT</div><div class="snapshot-grid">{cards}</div></div>\n\n'
 
 SNAPSHOT_RE = re.compile(
     r'<div class="quality-snapshot">.*?</div>\s*</div>\s*</div>\s*\n\n',

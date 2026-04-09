@@ -101,11 +101,11 @@ def parse_file(content):
     return data
 
 def build_card(label, value, color, sub=""):
-    sub_html = f'<div class="card-sub">{sub}</div>' if sub and sub != "—" else ""
-    return f'<div class="card {color}"><div class="card-label">{label}</div><div class="card-value">{value}</div>{sub_html}</div>'
+    sub_html = f'\n<div class="card-sub">{sub}</div>' if sub and sub != "—" else ""
+    return f'<div class="card {color}">\n<div class="card-label">{label}</div>\n<div class="card-value">{value}</div>{sub_html}\n</div>'
 
 def build_snapshot(data):
-    cards = "".join([
+    cards = "\n".join([
         build_card("5Y AVG ROE",  data["roe"],            COLOR_MAP["roe"]),
         build_card("护城河评级",   data["moat"],           COLOR_MAP["moat"]),
         build_card("可持续性",     data["sustainability"], COLOR_MAP["sustainability"]),
@@ -115,7 +115,7 @@ def build_snapshot(data):
         build_card("进入壁垒",     data["barrier"],        COLOR_MAP["barrier"]),
         build_card("优势存在性",   data["advantage"],      COLOR_MAP["advantage"], data.get("advantage_sub", "")),
     ])
-    return f'<div class="quality-snapshot"><div class="snapshot-title">QUALITY SNAPSHOT</div><div class="snapshot-grid">{cards}</div></div>\n\n'
+    return f'<div class="quality-snapshot">\n<div class="snapshot-title">QUALITY SNAPSHOT</div>\n<div class="snapshot-grid">\n{cards}\n</div>\n</div>\n\n'
 
 SNAPSHOT_RE = re.compile(
     r'<div class="quality-snapshot">.*?</div>\s*</div>\s*</div>\s*\n\n',
@@ -136,15 +136,17 @@ def inject(filepath):
 
     snapshot = build_snapshot(data)
 
-    # 插入到第一个 ## 标题之前
-    match = re.search(r'^## ', content, re.MULTILINE)
+    # 插入到第一个 # 标题之后，空行之后，blockquote/--- 之前
+    match = re.search(r'^# .+\n\n', content, re.MULTILINE)
     if match:
-        pos = match.start()
+        pos = match.end()
         new_content = content[:pos] + snapshot + content[pos:]
     else:
-        new_content = snapshot + content
+        match = re.search(r'^# .+\n', content, re.MULTILINE)
+        pos = match.end() if match else 0
+        new_content = content[:pos] + '\n' + snapshot + content[pos:]
 
-    with open(filepath, "w", encoding="utf-8") as f:
+    with open(filepath, "w", encoding="utf-8", newline="\n") as f:
         f.write(new_content)
 
     print(f"OK  {os.path.basename(filepath)}")

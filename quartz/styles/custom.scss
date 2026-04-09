@@ -1,3 +1,22 @@
 @use "./base.scss";
 
 // put your custom CSS here!
+
+// 正文行距
+article p, article li {
+  line-height: 2.0;       // 默认约 1.6，调大这里
+}
+
+// 正文字号
+article {
+  font-size: 1.05rem;
+}
+
+// 标题字号
+article h1 { font-size: 2rem; }
+article h2 { font-size: 1.5rem; }
+
+// 段落间距
+article p {
+  margin-bottom: 1.3em;
+}

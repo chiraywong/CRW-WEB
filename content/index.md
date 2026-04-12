@@ -1,5 +1,5 @@
 ---
-WELCOME
+title: WELCOME
 ---
 
 ## BUSINESSS
@@ -17,7 +17,6 @@ WELCOME
 ## 11
 
 本站所有报告分析均由Turtle_investment_framework/financial-report-minesweeper by TeranceJiang 以及Claude Code提供
----
 
 
 

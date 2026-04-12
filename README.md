@@ -19,7 +19,5 @@ Quartz is a set of tools that helps you publish your [digital garden](https://jz
 ## upload
 cd E:/code/quartz
 git add -A
-git commit -m ""
+git commit -m "新增部分报告"
 git push
-
-

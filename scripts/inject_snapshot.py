@@ -23,8 +23,8 @@ COLOR_MAP = {
 
 def yaml_val(text, key):
     """从 YAML 或 Markdown 表格中提取指定 key 的值"""
-    # YAML 格式: key: value  # comment
-    m = re.search(rf'^\s*{re.escape(key)}\s*:\s*["\']?([^"\'#\n\r]+?)["\']?\s*(?:#.*)?[\r\n]',
+    # YAML 格式: key: value  # comment（允许可选的 D\d_ 前缀，如 D2_roe_5y_avg）
+    m = re.search(rf'^\s*(?:D\d+_)?{re.escape(key)}\s*:\s*["\']?([^"\'#\n\r]+?)["\']?\s*(?:#.*)?[\r\n]',
                   text, re.MULTILINE)
     if m:
         return m.group(1).strip()
@@ -50,8 +50,13 @@ def extract_params_block(content):
     m = re.search(r'```json\s*\r?\n(.*?)```', content, re.DOTALL)
     if m:
         return m.group(1)
-    # 表格格式：取"结构化参数"或末尾大段表格
-    m = re.search(r'(?:结构化参数|##\s*结构化参数)(.*?)(?:^---|\Z)', content, re.DOTALL | re.MULTILINE)
+    # 表格格式：取"结构化参数"标题后的内容（跳过紧随的 --- 分隔线）
+    m = re.search(r'##\s*结构化参数\s*\r?\n(?:---\s*\r?\n)?(.*?)(?=\n---\s*\r?\n\*|\Z)',
+                  content, re.DOTALL)
+    if m and m.group(1).strip():
+        return m.group(1)
+    # 兜底：取"结构化参数"后到文末
+    m = re.search(r'(?:结构化参数|##\s*结构化参数)(.*)', content, re.DOTALL)
     if m:
         return m.group(1)
     # 最后兜底：取全文（表格散布在各处）
